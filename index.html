@@ -52,9 +52,6 @@
           </span>
           ESP32 Ingest Stream: Streaming Live
         </div>
-        <a href="https://github.com/Vishnusree080905/iot-telemetry-portfolio" target="_blank" rel="noreferrer" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition">
-          <i data-lucide="github" class="w-4 h-4"></i> Repository
-        </a>
       </div>
     </div>
   </header>
@@ -342,11 +339,9 @@
       const lastTemp = chart.data.datasets[0].data.slice(-1)[0];
       const lastHum = chart.data.datasets[1].data.slice(-1)[0];
 
-      // Generate slight natural variation
       const nextTemp = +(Math.max(24.0, Math.min(29.0, lastTemp + (Math.random() * 0.8 - 0.39)))).toFixed(2);
       const nextHum = +(Math.max(50.0, Math.min(65.0, lastHum + (Math.random() * 1.2 - 0.58)))).toFixed(2);
 
-      // Push new point & shift old point
       chart.data.labels.push(timeStr);
       chart.data.datasets[0].data.push(nextTemp);
       chart.data.datasets[1].data.push(nextHum);
@@ -359,7 +354,6 @@
 
       chart.update('none');
 
-      // Update hardware status card values slightly
       document.getElementById('rssiVal').innerText = `${-60 + Math.floor(Math.random() * 6 - 3)} dBm`;
       document.getElementById('heapVal').innerText = `${(184320 + Math.floor(Math.random() * 1024 - 512)).toLocaleString()} Bytes`;
       document.getElementById('coreVal').innerText = `${(41.5 + Math.random() * 0.6).toFixed(1)} °C / 4.12 V`;
