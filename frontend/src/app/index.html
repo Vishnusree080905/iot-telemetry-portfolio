@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IoT Telemetry & Observability Engine</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            slate: {
+              850: '#111827',
+              950: '#030712',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen pb-12">
+
+  <!-- Navigation Header -->
+  <header class="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+          <i data-lucide="activity" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            IoT Telemetry & Observability Engine
+            <span class="text-xs font-normal px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Live System</span>
+          </h1>
+          <p class="text-xs text-slate-400">PostgreSQL Time-Series Schema & Microcontroller Edge Observability</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+        <div id="liveIndicator" class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+          </span>
+          ESP32 Ingest Stream: Active
+        </div>
+        <a href="https://github.com/Vishnusree080905/iot-telemetry-portfolio" target="_blank" rel="noreferrer" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition">
+          <i data-lucide="github" class="w-4 h-4"></i> Repository
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
+
+    <!-- System Hardware Status Cards -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <!-- Card 1 -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-lg">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">Node Status</span>
+          <i data-lucide="cpu" class="w-4 h-4 text-emerald-400"></i>
+        </div>
+        <div>
+          <div class="text-lg font-bold text-white">ESP32_Node_Lab_01</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">FW v1.4.2 | ESP32-D0WDQ6</div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-lg">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">Wi-Fi Signal (RSSI)</span>
+          <i data-lucide="wifi" class="w-4 h-4 text-blue-400"></i>
+        </div>
+        <div>
+          <div id="rssiVal" class="text-lg font-bold text-white">-62 dBm</div>
+          <div class="text-[11px] text-emerald-400 mt-0.5">Excellent (2.4 GHz)</div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-lg">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">Free SRAM Heap</span>
+          <i data-lucide="hard-drive" class="w-4 h-4 text-amber-400"></i>
+        </div>
+        <div>
+          <div id="heapVal" class="text-lg font-bold text-white">184,320 Bytes</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Optimal Memory Footprint</div>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-lg">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">CPU Temp / Voltage</span>
+          <i data-lucide="thermometer" class="w-4 h-4 text-rose-400"></i>
+        </div>
+        <div>
+          <div id="coreVal" class="text-lg font-bold text-white">41.8 °C / 4.12 V</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">LiPo Nominal State</div>
+        </div>
+      </div>
+
+      <!-- Card 5 -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-lg">
+        <div class="flex items-center justify-between text-slate-400 mb-2">
+          <span class="text-xs font-medium uppercase tracking-wider">PostgreSQL Engine</span>
+          <i data-lucide="database" class="w-4 h-4 text-indigo-400"></i>
+        </div>
+        <div>
+          <div class="text-lg font-bold text-white">PG 16 PARTITIONED</div>
+          <div class="text-[11px] text-indigo-400 mt-0.5">Range Partition Active</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <div class="border-b border-slate-800 flex items-center gap-6">
+      <button id="tabNavCharts" onclick="switchTab('charts')" class="pb-3 text-sm font-semibold border-b-2 border-emerald-400 text-emerald-400 flex items-center gap-2 transition">
+        <i data-lucide="line-chart" class="w-4 h-4"></i> Time-Series Telemetry
+      </button>
+      <button id="tabNavSchema" onclick="switchTab('schema')" class="pb-3 text-sm font-semibold text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+        <i data-lucide="table" class="w-4 h-4"></i> Database Schema & SQL Queries
+      </button>
+      <button id="tabNavIngest" onclick="switchTab('ingest')" class="pb-3 text-sm font-semibold text-slate-400 hover:text-slate-200 flex items-center gap-2 transition">
+        <i data-lucide="send" class="w-4 h-4"></i> Payload API Ingestion Simulator
+      </button>
+    </div>
+
+    <!-- TAB 1: CHARTS -->
+    <section id="secCharts" class="space-y-6">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-6 shadow-xl">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-base font-bold text-white">Live Environmental Stream (DHT22 Sensor)</h2>
+            <p class="text-xs text-slate-400">High-resolution time-bucketed readings from hardware node</p>
+          </div>
+          <div class="flex items-center gap-2 bg-slate-950 p-1 rounded-lg border border-slate-800">
+            <button onclick="updateTimeframe('1h')" class="tf-btn px-3 py-1 rounded text-xs font-medium bg-slate-800 text-emerald-400">1H</button>
+            <button onclick="updateTimeframe('24h')" class="tf-btn px-3 py-1 rounded text-xs font-medium text-slate-400 hover:text-white">24H</button>
+            <button onclick="updateTimeframe('7d')" class="tf-btn px-3 py-1 rounded text-xs font-medium text-slate-400 hover:text-white">7D</button>
+          </div>
+        </div>
+        <div class="h-80 w-full">
+          <canvas id="telemetryChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: SCHEMA & QUERIES -->
+    <section id="secSchema" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Schema SQL -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-6">
+          <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+            <h2 class="text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="database" class="w-4 h-4 text-emerald-400"></i> Relational Schema (schema.sql)
+            </h2>
+            <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">PostgreSQL 16</span>
+          </div>
+          <pre class="font-mono text-xs text-emerald-300/90 bg-slate-950 p-4 rounded-lg border border-slate-800/80 overflow-x-auto leading-relaxed"><code><span class="text-purple-400">-- Partitioned Time-Series Sensor Readings Table</span>
+<span class="text-blue-400">CREATE TABLE</span> <span class="text-white">sensor_readings</span> (
+    reading_id <span class="text-amber-400">BIGSERIAL</span>,
+    sensor_id <span class="text-amber-400">INT NOT NULL REFERENCES</span> sensors(sensor_id),
+    reading_value <span class="text-amber-400">DECIMAL(10, 4) NOT NULL</span>,
+    recorded_at <span class="text-amber-400">TIMESTAMP WITH TIME ZONE DEFAULT</span> <span class="text-sky-300">CURRENT_TIMESTAMP</span>,
+    <span class="text-blue-400">PRIMARY KEY</span> (reading_id, recorded_at)
+) <span class="text-blue-400">PARTITION BY RANGE</span> (recorded_at);
+
+<span class="text-purple-400">-- Partition by Monthly Interval</span>
+<span class="text-blue-400">CREATE TABLE</span> sensor_readings_2026_09 <span class="text-blue-400">PARTITION OF</span> sensor_readings
+    <span class="text-blue-400">FOR VALUES FROM</span> (<span class="text-emerald-400">'2026-09-01'</span>) <span class="text-blue-400">TO</span> (<span class="text-emerald-400">'2026-10-01'</span>);</code></pre>
+        </div>
+
+        <!-- Analytical Queries SQL -->
+        <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-6">
+          <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+            <h2 class="text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="code-2" class="w-4 h-4 text-blue-400"></i> Time-Bucket Analytics (queries.sql)
+            </h2>
+            <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">Analytical SQL</span>
+          </div>
+          <pre class="font-mono text-xs text-sky-300/90 bg-slate-950 p-4 rounded-lg border border-slate-800/80 overflow-x-auto leading-relaxed"><code><span class="text-purple-400">-- 15-Minute Resampled Moving Average Query</span>
+<span class="text-blue-400">SELECT</span> 
+    s.sensor_name,
+    <span class="text-sky-300">DATE_TRUNC</span>(<span class="text-emerald-400">'hour'</span>, r.recorded_at) + 
+    <span class="text-amber-400">INTERVAL</span> <span class="text-emerald-400">'15 min'</span> * (<span class="text-sky-300">EXTRACT</span>(<span class="text-emerald-400">MINUTE FROM</span> r.recorded_at)::<span class="text-amber-400">INT</span> / <span class="text-emerald-400">15</span>) <span class="text-blue-400">AS</span> time_bucket,
+    <span class="text-sky-300">ROUND</span>(<span class="text-sky-300">AVG</span>(r.reading_value), <span class="text-emerald-400">2</span>) <span class="text-blue-400">AS</span> avg_reading
+<span class="text-blue-400">FROM</span> sensor_readings r
+<span class="text-blue-400">JOIN</span> sensors s <span class="text-blue-400">ON</span> r.sensor_id = s.sensor_id
+<span class="text-blue-400">WHERE</span> r.recorded_at >= <span class="text-sky-300">NOW</span>() - <span class="text-amber-400">INTERVAL</span> <span class="text-emerald-400">'24 hours'</span>
+<span class="text-blue-400">GROUP BY</span> s.sensor_name, time_bucket
+<span class="text-blue-400">ORDER BY</span> time_bucket <span class="text-blue-400">DESC</span>;</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: INGESTION API SIMULATOR -->
+    <section id="secIngest" class="hidden space-y-6">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-6">
+        <h2 class="text-base font-bold text-white mb-2">Microcontroller Payload Simulator</h2>
+        <p class="text-xs text-slate-400 mb-6">Simulate an HTTP POST telemetry request sent from an ESP32 micro-controller to the Python FastAPI ingestion backend.</p>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-xs font-mono text-slate-400 mb-2">HTTP POST /api/v1/telemetry</label>
+            <textarea id="jsonInput" rows="11" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs text-emerald-400 focus:outline-none focus:border-emerald-500">
+{
+  "device_id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "readings": [
+    {"sensor_id": 1, "reading_value": 26.85},
+    {"sensor_id": 2, "reading_value": 58.40}
+  ],
+  "metrics": {
+    "wifi_rssi_dbm": -62,
+    "free_heap_bytes": 184320,
+    "battery_voltage": 4.12,
+    "cpu_temperature": 41.8
+  }
+}</textarea>
+            <button onclick="simulateIngest()" class="mt-3 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-lg transition flex items-center gap-2">
+              <i data-lucide="play" class="w-4 h-4"></i> Dispatch Hardware Payload
+            </button>
+          </div>
+
+          <div>
+            <label class="block text-xs font-mono text-slate-400 mb-2">Ingestion Server Response</label>
+            <div id="apiResponse" class="bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-xs text-slate-400 h-52 overflow-y-auto">
+              // Click "Dispatch Hardware Payload" to test ingestion pipeline...
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Script Logic -->
+  <script>
+    // Initialize Icons
+    lucide.createIcons();
+
+    // Chart.js Setup
+    const ctx = document.getElementById('telemetryChart').getContext('2d');
+    let labels = ["12:00", "12:05", "12:10", "12:15", "12:20", "12:25", "12:30"];
+    let tempData = [25.4, 25.8, 26.1, 26.5, 26.2, 25.9, 26.4];
+    let humData = [55.0, 56.2, 57.1, 58.2, 57.8, 56.9, 57.5];
+
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Temperature (°C)',
+            data: tempData,
+            borderColor: 'rgb(239, 68, 68)',
+            backgroundColor: 'rgba(239, 68, 68, 0.08)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2
+          },
+          {
+            label: 'Humidity (%)',
+            data: humData,
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.08)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#94a3b8', font: { size: 12 } } }
+        },
+        scales: {
+          x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
+          y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }
+        }
+      }
+    });
+
+    // Navigation Logic
+    function switchTab(tab) {
+      document.getElementById('secCharts').classList.add('hidden');
+      document.getElementById('secSchema').classList.add('hidden');
+      document.getElementById('secIngest').classList.add('hidden');
+
+      document.getElementById('tabNavCharts').className = "pb-3 text-sm font-semibold text-slate-400 hover:text-slate-200 flex items-center gap-2 transition";
+      document.getElementById('tabNavSchema').className = "pb-3 text-sm font-semibold text-slate-400 hover:text-slate-200 flex items-center gap-2 transition";
+      document.getElementById('tabNavIngest').className = "pb-3 text-sm font-semibold text-slate-400 hover:text-slate-200 flex items-center gap-2 transition";
+
+      if (tab === 'charts') {
+        document.getElementById('secCharts').classList.remove('hidden');
+        document.getElementById('tabNavCharts').className = "pb-3 text-sm font-semibold border-b-2 border-emerald-400 text-emerald-400 flex items-center gap-2 transition";
+      } else if (tab === 'schema') {
+        document.getElementById('secSchema').classList.remove('hidden');
+        document.getElementById('tabNavSchema').className = "pb-3 text-sm font-semibold border-b-2 border-emerald-400 text-emerald-400 flex items-center gap-2 transition";
+      } else if (tab === 'ingest') {
+        document.getElementById('secIngest').classList.remove('hidden');
+        document.getElementById('tabNavIngest').className = "pb-3 text-sm font-semibold border-b-2 border-emerald-400 text-emerald-400 flex items-center gap-2 transition";
+      }
+    }
+
+    // Ingest Simulation Logic
+    function simulateIngest() {
+      const respBox = document.getElementById('apiResponse');
+      respBox.innerHTML = '<span class="text-amber-400">HTTP/1.1 100 Continue...</span>';
+      
+      setTimeout(() => {
+        respBox.innerHTML = `<span class="text-emerald-400">HTTP/1.1 201 Created</span>\n` +
+          `<span class="text-slate-500">Content-Type: application/json</span>\n\n` +
+          JSON.stringify({
+            status: "success",
+            records_inserted: {
+              sensor_readings: 2,
+              device_metrics: 1
+            },
+            timestamp: new Date().toISOString()
+          }, null, 2);
+      }, 400);
+    }
+  </script>
+</body>
+</html>
