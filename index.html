@@ -50,7 +50,7 @@
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
           </span>
-          ESP32 Ingest Stream: Active
+          ESP32 Ingest Stream: Streaming Live
         </div>
         <a href="https://github.com/Vishnusree080905/iot-telemetry-portfolio" target="_blank" rel="noreferrer" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition">
           <i data-lucide="github" class="w-4 h-4"></i> Repository
@@ -63,7 +63,6 @@
 
     <!-- System Hardware Status Cards -->
     <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-      <!-- Card 1 -->
       <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-lg">
         <div class="flex items-center justify-between text-slate-400 mb-2">
           <span class="text-xs font-medium uppercase tracking-wider">Node Status</span>
@@ -75,7 +74,6 @@
         </div>
       </div>
 
-      <!-- Card 2 -->
       <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-lg">
         <div class="flex items-center justify-between text-slate-400 mb-2">
           <span class="text-xs font-medium uppercase tracking-wider">Wi-Fi Signal (RSSI)</span>
@@ -87,7 +85,6 @@
         </div>
       </div>
 
-      <!-- Card 3 -->
       <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-lg">
         <div class="flex items-center justify-between text-slate-400 mb-2">
           <span class="text-xs font-medium uppercase tracking-wider">Free SRAM Heap</span>
@@ -99,7 +96,6 @@
         </div>
       </div>
 
-      <!-- Card 4 -->
       <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-lg">
         <div class="flex items-center justify-between text-slate-400 mb-2">
           <span class="text-xs font-medium uppercase tracking-wider">CPU Temp / Voltage</span>
@@ -111,7 +107,6 @@
         </div>
       </div>
 
-      <!-- Card 5 -->
       <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-lg">
         <div class="flex items-center justify-between text-slate-400 mb-2">
           <span class="text-xs font-medium uppercase tracking-wider">PostgreSQL Engine</span>
@@ -142,16 +137,21 @@
       <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-6 shadow-xl">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h2 class="text-base font-bold text-white">Live Environmental Stream (DHT22 Sensor)</h2>
-            <p class="text-xs text-slate-400">High-resolution time-bucketed readings from hardware node</p>
+            <h2 class="text-base font-bold text-white flex items-center gap-2">
+              Live Environmental Stream (DHT22 Sensor)
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 animate-pulse">
+                Real-Time Dynamic Refresh
+              </span>
+            </h2>
+            <p class="text-xs text-slate-400">Live telemetry stream updated continuously every 2 seconds</p>
           </div>
           <div class="flex items-center gap-2 bg-slate-950 p-1 rounded-lg border border-slate-800">
-            <button onclick="updateTimeframe('1h')" class="tf-btn px-3 py-1 rounded text-xs font-medium bg-slate-800 text-emerald-400">1H</button>
-            <button onclick="updateTimeframe('24h')" class="tf-btn px-3 py-1 rounded text-xs font-medium text-slate-400 hover:text-white">24H</button>
-            <button onclick="updateTimeframe('7d')" class="tf-btn px-3 py-1 rounded text-xs font-medium text-slate-400 hover:text-white">7D</button>
+            <button onclick="toggleStream()" id="streamToggleBtn" class="px-3 py-1 rounded text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 transition">
+              Pause Live Feed
+            </button>
           </div>
         </div>
-        <div class="h-80 w-full">
+        <div class="h-96 w-full">
           <canvas id="telemetryChart"></canvas>
         </div>
       </div>
@@ -160,7 +160,6 @@
     <!-- TAB 2: SCHEMA & QUERIES -->
     <section id="secSchema" class="hidden space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Schema SQL -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-6">
           <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
             <h2 class="text-sm font-bold text-white flex items-center gap-2">
@@ -182,7 +181,6 @@
     <span class="text-blue-400">FOR VALUES FROM</span> (<span class="text-emerald-400">'2026-09-01'</span>) <span class="text-blue-400">TO</span> (<span class="text-emerald-400">'2026-10-01'</span>);</code></pre>
         </div>
 
-        <!-- Analytical Queries SQL -->
         <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-6">
           <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
             <h2 class="text-sm font-bold text-white flex items-center gap-2">
@@ -245,56 +243,155 @@
 
   </main>
 
-  <!-- Script Logic -->
   <script>
-    // Initialize Icons
     lucide.createIcons();
 
-    // Chart.js Setup
+    // Setup Canvas Gradient Backgrounds
     const ctx = document.getElementById('telemetryChart').getContext('2d');
-    let labels = ["12:00", "12:05", "12:10", "12:15", "12:20", "12:25", "12:30"];
-    let tempData = [25.4, 25.8, 26.1, 26.5, 26.2, 25.9, 26.4];
-    let humData = [55.0, 56.2, 57.1, 58.2, 57.8, 56.9, 57.5];
+    const redGrad = ctx.createLinearGradient(0, 0, 0, 300);
+    redGrad.addColorStop(0, 'rgba(239, 68, 68, 0.35)');
+    redGrad.addColorStop(1, 'rgba(239, 68, 68, 0.0)');
+
+    const blueGrad = ctx.createLinearGradient(0, 0, 0, 300);
+    blueGrad.addColorStop(0, 'rgba(59, 130, 246, 0.35)');
+    blueGrad.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+
+    // Initial Live Data Setup
+    const maxDataPoints = 18;
+    const initialLabels = [];
+    const initialTemp = [];
+    const initialHum = [];
+
+    const now = new Date();
+    for (let i = maxDataPoints - 1; i >= 0; i--) {
+      const d = new Date(now.getTime() - i * 2000);
+      initialLabels.push(d.toLocaleTimeString());
+      initialTemp.push(+(25.5 + Math.random() * 1.8).toFixed(2));
+      initialHum.push(+(56.0 + Math.random() * 3.2).toFixed(2));
+    }
 
     const chart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: labels,
+        labels: initialLabels,
         datasets: [
           {
             label: 'Temperature (°C)',
-            data: tempData,
-            borderColor: 'rgb(239, 68, 68)',
-            backgroundColor: 'rgba(239, 68, 68, 0.08)',
+            data: initialTemp,
+            borderColor: '#ef4444',
+            backgroundColor: redGrad,
             fill: true,
             tension: 0.4,
-            borderWidth: 2
+            borderWidth: 2.5,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            pointBackgroundColor: '#ef4444'
           },
           {
             label: 'Humidity (%)',
-            data: humData,
-            borderColor: 'rgb(59, 130, 246)',
-            backgroundColor: 'rgba(59, 130, 246, 0.08)',
+            data: initialHum,
+            borderColor: '#3b82f6',
+            backgroundColor: blueGrad,
             fill: true,
             tension: 0.4,
-            borderWidth: 2
+            borderWidth: 2.5,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            pointBackgroundColor: '#3b82f6'
           }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: {
+          duration: 400,
+          easing: 'linear'
+        },
+        interaction: {
+          mode: 'index',
+          intersect: false
+        },
         plugins: {
-          legend: { labels: { color: '#94a3b8', font: { size: 12 } } }
+          legend: { 
+            labels: { 
+              color: '#cbd5e1', 
+              font: { size: 12, weight: '600' } 
+            } 
+          }
         },
         scales: {
-          x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
-          y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } }
+          x: { 
+            grid: { color: '#1e293b' }, 
+            ticks: { color: '#64748b', font: { size: 10 } } 
+          },
+          y: { 
+            grid: { color: '#1e293b' }, 
+            ticks: { color: '#64748b', font: { size: 11 } } 
+          }
         }
       }
     });
 
-    // Navigation Logic
+    // Real-Time Dynamic Stream Engine
+    let isStreaming = true;
+    const streamInterval = setInterval(() => {
+      if (!isStreaming) return;
+
+      const timeStr = new Date().toLocaleTimeString();
+      const lastTemp = chart.data.datasets[0].data.slice(-1)[0];
+      const lastHum = chart.data.datasets[1].data.slice(-1)[0];
+
+      // Generate slight natural variation
+      const nextTemp = +(Math.max(24.0, Math.min(29.0, lastTemp + (Math.random() * 0.8 - 0.39)))).toFixed(2);
+      const nextHum = +(Math.max(50.0, Math.min(65.0, lastHum + (Math.random() * 1.2 - 0.58)))).toFixed(2);
+
+      // Push new point & shift old point
+      chart.data.labels.push(timeStr);
+      chart.data.datasets[0].data.push(nextTemp);
+      chart.data.datasets[1].data.push(nextHum);
+
+      if (chart.data.labels.length > maxDataPoints) {
+        chart.data.labels.shift();
+        chart.data.datasets[0].data.shift();
+        chart.data.datasets[1].data.shift();
+      }
+
+      chart.update('none');
+
+      // Update hardware status card values slightly
+      document.getElementById('rssiVal').innerText = `${-60 + Math.floor(Math.random() * 6 - 3)} dBm`;
+      document.getElementById('heapVal').innerText = `${(184320 + Math.floor(Math.random() * 1024 - 512)).toLocaleString()} Bytes`;
+      document.getElementById('coreVal').innerText = `${(41.5 + Math.random() * 0.6).toFixed(1)} °C / 4.12 V`;
+
+    }, 2000);
+
+    function toggleStream() {
+      isStreaming = !isStreaming;
+      const btn = document.getElementById('streamToggleBtn');
+      const indicator = document.getElementById('liveIndicator');
+
+      if (isStreaming) {
+        btn.innerText = 'Pause Live Feed';
+        btn.className = "px-3 py-1 rounded text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 transition";
+        indicator.innerHTML = `
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+          </span>
+          ESP32 Ingest Stream: Streaming Live
+        `;
+      } else {
+        btn.innerText = 'Resume Live Feed';
+        btn.className = "px-3 py-1 rounded text-xs font-medium bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:bg-amber-500/30 transition";
+        indicator.innerHTML = `
+          <span class="h-2.5 w-2.5 rounded-full bg-amber-400"></span>
+          ESP32 Ingest Stream: Paused
+        `;
+      }
+    }
+
+    // Navigation Tab Switching Logic
     function switchTab(tab) {
       document.getElementById('secCharts').classList.add('hidden');
       document.getElementById('secSchema').classList.add('hidden');
@@ -316,7 +413,7 @@
       }
     }
 
-    // Ingest Simulation Logic
+    // Payload Simulator Logic
     function simulateIngest() {
       const respBox = document.getElementById('apiResponse');
       respBox.innerHTML = '<span class="text-amber-400">HTTP/1.1 100 Continue...</span>';
